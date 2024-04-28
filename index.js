@@ -23,7 +23,7 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    // await client.connect();
+    await client.connect();
     const spotsDB = client.db("spotsDB");
     const spotsCollection = spotsDB.collection("spotsCollection");
     const countrySpotCollection = spotsDB.collection("countrySpotCollection");
@@ -32,18 +32,16 @@ async function run() {
       const data = req.body;
       console.log(data);
       const dbResponse = await spotsCollection.insertOne(data);
-      const cDetails = {
-        cName: data?.cName,
-        url: data?.url,
-        description: data?.description,
-      };
-      console.log(cDetails);
-      const CdbResponse = await countrySpotCollection.insertOne(cDetails);
       res.send(dbResponse);
     });
     // READ OF CRUD
     app.get("/spots", async (req, res) => {
       const dbResponse = await spotsCollection.find().toArray();
+      res.send(dbResponse);
+    });
+    // READ OF CRUD
+    app.get("/coutrySpot", async (req, res) => {
+      const dbResponse = await countrySpotCollection.find().toArray();
       res.send(dbResponse);
     });
     // READ-ONE OF CRUD
@@ -55,18 +53,55 @@ async function run() {
     // READ-MY-LIST OF CRUD
     app.get("/myList/:mail", async (req, res) => {
       const mail = req.params.mail;
-      // console.log(mail);
       const query = { email: mail };
-      console.log(query);
       const dbResponse = await spotsCollection.find(query).toArray();
       res.send(dbResponse);
     });
-    app.get("/myList", async(req, res) =>{
-      const email = req.query.email;
-      console.log(email);
-      const result = await spotsCollection.find({email:email}).toArray();
-      res.send(result)
-    })
+    // DELETE OF CRUD
+    app.delete("/spots/:id", async (req, res) => {
+      const id = new ObjectId(req.params.id);
+      const query = { _id: new ObjectId(id) };
+      const dbResponse = await spotsCollection.deleteOne(query);
+      res.send(dbResponse);
+    });
+    // UPDATE OF CRUD
+    app.put("/spots/:id", async (req, res) => {
+      const oldData = req.body;
+      const {
+        name,
+        email,
+        spot_Name,
+        cName,
+        location,
+        seasonality,
+        timing,
+        cost,
+        url,
+        description,
+      } = oldData;
+      const target = { _id: new ObjectId(req.params.id) };
+      const options = { upsert: true };
+      const upDated = {
+        $set: {
+          name: name,
+          email: email,
+          spot_Name: spot_Name,
+          cName: cName,
+          location: location,
+          seasonality: seasonality,
+          timing: timing,
+          cost: cost,
+          url: url,
+          description: description,
+        },
+      };
+      const dbResponse = await spotsCollection.updateOne(
+        target,
+        upDated,
+        options
+      );
+      res.send(dbResponse);
+    });
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log(
