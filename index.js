@@ -44,6 +44,12 @@ async function run() {
       const dbResponse = await countrySpotCollection.find().toArray();
       res.send(dbResponse);
     });
+    app.get("/coutrySpot/:name", async (req, res) => {
+      const countryName = req.params.name;
+      const query = { cName: countryName };
+      const dbResponse = await spotsCollection.find(query).toArray();
+      res.send(dbResponse);
+    });
     // READ-ONE OF CRUD
     app.get("/spots/:id", async (req, res) => {
       const id = new ObjectId(req.params.id);
