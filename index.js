@@ -74,8 +74,6 @@ async function run() {
     app.put("/spots/:id", async (req, res) => {
       const oldData = req.body;
       const {
-        name,
-        email,
         spot_Name,
         cName,
         location,
@@ -89,8 +87,6 @@ async function run() {
       const options = { upsert: true };
       const upDated = {
         $set: {
-          name: name,
-          email: email,
           spot_Name: spot_Name,
           cName: cName,
           location: location,
